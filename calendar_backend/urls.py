@@ -13,3 +13,4 @@ urlpatterns = [
     path('api/logout/', LogoutView.as_view(), name='api_logout'),
     path('api/register/', RegisterView.as_view(), name='register'),
 ]
+urlpatterns += router.urls
