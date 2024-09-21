@@ -3,20 +3,21 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.authtoken.views import ObtainAuthToken
 from rest_framework.authtoken.models import Token
+from rest_framework.permissions import IsAuthenticated  # Add this import
 from django.contrib.auth import logout
 from .models import Event
 from .serializers import EventSerializer, UserSerializer
 
 class EventViewSet(viewsets.ModelViewSet):
+    queryset = Event.objects.all()
     serializer_class = EventSerializer
     permission_classes = [IsAuthenticated]
-    
+
     def get_queryset(self):
         return Event.objects.filter(user=self.request.user)
 
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)
-        
 
 class CustomAuthToken(ObtainAuthToken):
     def post(self, request, *args, **kwargs):
