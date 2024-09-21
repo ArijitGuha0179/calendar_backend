@@ -1,22 +1,15 @@
-from rest_framework import viewsets
-from rest_framework.permissions import IsAuthenticated
+from rest_framework import viewsets, status
+from rest_framework.views import APIView
+from rest_framework.response import Response
 from rest_framework.authtoken.views import ObtainAuthToken
 from rest_framework.authtoken.models import Token
-from rest_framework.response import Response
-from rest_framework.views import APIView
-from rest_framework import status
+from django.contrib.auth import logout
 from .models import Event
 from .serializers import EventSerializer, UserSerializer
 
 class EventViewSet(viewsets.ModelViewSet):
+    queryset = Event.objects.all()
     serializer_class = EventSerializer
-    permission_classes = [IsAuthenticated]
-
-    def get_queryset(self):
-        return Event.objects.filter(user=self.request.user)
-
-    def perform_create(self, serializer):
-        serializer.save(user=self.request.user)
 
 class CustomAuthToken(ObtainAuthToken):
     def post(self, request, *args, **kwargs):
@@ -32,12 +25,10 @@ class CustomAuthToken(ObtainAuthToken):
         })
 
 class LogoutView(APIView):
-    permission_classes = [IsAuthenticated]
-
     def post(self, request):
-        # Simply delete the token to force a login
-        request.user.auth_token.delete()
-        return Response({"message": "Successfully logged out."})
+        request.auth.delete()
+        logout(request)
+        return Response({"message": "Successfully logged out."}, status=status.HTTP_200_OK)
 
 class RegisterView(APIView):
     def post(self, request):
