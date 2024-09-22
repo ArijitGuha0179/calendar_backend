@@ -9,17 +9,30 @@ from .models import Event
 from .serializers import EventSerializer, UserSerializer
 
 class EventViewSet(viewsets.ModelViewSet):
+    """
+    ViewSet for handling CRUD operations on Event objects.
+    """
     queryset = Event.objects.all()
     serializer_class = EventSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated]  # Ensure the user is authenticated for all actions
 
     def get_queryset(self):
+        """
+        Override to return only events belonging to the current user.
+        """
         return Event.objects.filter(user=self.request.user)
 
     def perform_create(self, serializer):
+        """
+        Override to set the user of the event to the current user when creating.
+        """
         serializer.save(user=self.request.user)
 
 class CustomAuthToken(ObtainAuthToken):
+    """
+    Custom view for obtaining an auth token.
+    Extends the built-in ObtainAuthToken view to return additional user info.
+    """
     def post(self, request, *args, **kwargs):
         serializer = self.serializer_class(data=request.data,
                                            context={'request': request})
@@ -33,12 +46,21 @@ class CustomAuthToken(ObtainAuthToken):
         })
 
 class LogoutView(APIView):
+    """
+    View for handling user logout.
+    Deletes the user's auth token, effectively logging them out.
+    """
     def post(self, request):
+        # Delete the user's token
         request.auth.delete()
+        # Log the user out
         logout(request)
         return Response({"message": "Successfully logged out."}, status=status.HTTP_200_OK)
 
 class RegisterView(APIView):
+    """
+    View for handling user registration.
+    """
     def post(self, request):
         serializer = UserSerializer(data=request.data)
         if serializer.is_valid():

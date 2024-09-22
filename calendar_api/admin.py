@@ -7,4 +7,4 @@ class EventAdmin(admin.ModelAdmin):
     list_filter = ('user', 'start_time')
     search_fields = ('title', 'description')
 
-# Register your models here.
+
