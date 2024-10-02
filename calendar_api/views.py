@@ -20,7 +20,25 @@ class EventViewSet(viewsets.ModelViewSet):
         """
         Override to return only events belonging to the current user.
         """
-        return Event.objects.filter(user=self.request.user)
+        queryset = Event.objects.filter(user=self.request.user)
+        start_time = self.request.query_params.get('start_time')
+        end_time = self.request.query_params.get('end_time')
+
+        if start_time and end_time:
+        # Include only events that overlap the given range
+            queryset = queryset.filter(
+            start_time__lt=end_time,  # Event starts before the end_time
+            end_time__gt=start_time   # Event ends after the start_time
+        )
+        elif start_time:
+        # Include events that end after the start_time
+            queryset = queryset.filter(end_time__gt=start_time)
+        elif end_time:
+        # Include events that start before the end_time
+            queryset = queryset.filter(start_time__lt=end_time)
+
+        return queryset
+
 
     def perform_create(self, serializer):
         """
